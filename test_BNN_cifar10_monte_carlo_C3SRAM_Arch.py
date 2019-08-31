@@ -22,7 +22,7 @@ if __name__ == "__main__":
     monte_carlo_runs = 1
     result_filename = "results.mat"
     quant_filename = 'quant_256_11_13.mat'
-    sram_depth = 256
+    sram_depth = 256 # set to 1 to see the software baseline accuracy
     bitline_noise = 0.97
     ADC_offset = 0.89
     n_bits = 1
