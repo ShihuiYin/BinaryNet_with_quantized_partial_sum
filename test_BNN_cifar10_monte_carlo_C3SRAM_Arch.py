@@ -14,27 +14,49 @@ import XNORNET_SRAM
 import sys
 import scipy.io as sio
 import csv
+import argparse
+
 
 from pylearn2.datasets.cifar10 import CIFAR10
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="BNN CIFAR10 mapped on C3SRAM-based architecture", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-mc', '--monte_carlo_runs', default=1, type=int, help="Number of monte carlo runs")
+    parser.add_argument('-rs', '--result_filename', default='results.mat', type=str, help="Result file name to save all the test errors from Monte Carlo runs")
+    parser.add_argument('-qt', '--quant_filename', default='quant_256_11_13.mat', type=str, help="quantization file defining quantization edges and levels")
+    parser.add_argument('-sd', '--sram_depth', default=256, type=int, help="SRAM depth of C3SRAM")
+    parser.add_argument('-bn', '--bitline_noise', default=0.97, type=float, help="Standard deviation of bitline noise in terms of MAC value")
+    parser.add_argument('-ao', '--ADC_offset', default=0.89, type=float, help="ADC offset in terms of MAC value")
+    parser.add_argument('-nb', '--n_bits', default=1, type=int, help="Activation precision, currently only support 1-bit in this script")
+    parser.add_argument('-fb', '--n_frac', default=0, type=int, help="Number of fraction bits in activation, currently only support 0-bit in this script")
+    parser.add_argument('-rp', '--repr', default='xnor', type=str, help="Representation of binary activation: xnor(-1/+1), binary(+1/0), currently only support xnor in this script")
+    parser.add_argument('-bs', '--batch_size', default=50, type=int, help="Batch size")
+    parser.add_argument('-ni', '--num_images', default=10000, type=int, help="number of images to test")
+    parser.add_argument('-ac', '--arch', default='128-256-256-512', type=str, help="Architecture of model: currently support 128-256-512-1024 and 128-256-256-512")
+    parser.add_argument('-bl', '--baseline', action='store_true', help="If '--baseline' specified, baseline accuracy will be evaluated.")
+    args = parser.parse_args()
+    monte_carlo_runs = args.monte_carlo_runs
+    result_filename = args.result_filename
+    quant_filename = args.quant_filename
+    sram_depth = args.sram_depth if not args.baseline else 1
+    bitline_noise = args.bitline_noise
+    ADC_offset = args.ADC_offset
+    n_bits = args.n_bits
+    n_frac = args.n_frac
+    repr = args.repr
     
-    monte_carlo_runs = 1
-    result_filename = "results.mat"
-    quant_filename = 'quant_256_11_13.mat'
-    sram_depth = 256 # set to 1 to see the software baseline accuracy
-    bitline_noise = 0.97
-    ADC_offset = 0.89
-    n_bits = 1
-    n_frac = 0
-    repr = 'xnor'
-    
-    batch_size = 50
-    num_images = 10000
+    batch_size = args.batch_size
+    num_images = args.num_images
     num_batches = int(num_images / batch_size)
 
-    layers = [128,256,256,512]
-    model_filename = 'cifar10_parameters_128_256_256_512.npz'
+    layers = list(map(int,args.arch.split('-')))
+    if args.arch == "128-256-256-512":
+        model_filename = 'cifar10_parameters_128_256_256_512.npz'
+    elif args.arch == "128-256-512-1024":
+        model_filename = 'cifar10_parameters_BNN.npz'
+    else:
+        print("Currently, architecture %s is not supported!" % args.arch)
+        exit
     activation = binary_ops.SignTheano
     quant_lower_bound = -sram_depth
     print("batch_size = "+str(batch_size))
