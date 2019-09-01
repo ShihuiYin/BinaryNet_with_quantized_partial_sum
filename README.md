@@ -19,4 +19,4 @@ python test_BNN_cifar10_monte_carlo_C3SRAM_Arch.py -mc 10 (Run 10 Monte Carlo ru
 
 python test_BNN_cifar10_monte_carlo_C3SRAM_Arch.py -mc 20 -ao 1.5 -bn 1.5 (Run 20 Monte Carlo runs with ADC offset of 1.5 MAC value and bitline noise of 1.5 MAC value)
 
-python test_BNN_cifar10_monte_carlo_C3SRAM_Arch.py -h to (see more options)
+python test_BNN_cifar10_monte_carlo_C3SRAM_Arch.py -h (to see more options)
